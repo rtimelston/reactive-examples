@@ -1,4 +1,5 @@
 package guru.springframework.reactiveexamples.domain;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,8 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PersonRepositoryImplTest {
 
@@ -54,7 +54,12 @@ public class PersonRepositoryImplTest {
     @DisplayName("getById - returns null for non-existing person")
     void getById_ReturnsNullForNonExistingPerson() {
         Mono<Person> actualPerson = personRepository.getById(-1);
-        assertNull(actualPerson);
+        actualPerson
+                .doOnError(e -> {
+                    System.out.println(e);
+                })
+                .onErrorReturn(null)
+                .subscribe(Assertions::assertNull);
     }
 
     @Test
