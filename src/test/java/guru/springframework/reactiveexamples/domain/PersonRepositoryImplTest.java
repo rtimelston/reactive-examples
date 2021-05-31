@@ -95,4 +95,40 @@ public class PersonRepositoryImplTest {
             assert(!list.contains(new Person(5, "", "")));
         });
     }
+
+    @Test
+    @DisplayName("findAll - find one by id filter")
+    void findAll_FindsOneByIdFilter() {
+        final Integer id = 3;
+        final Flux<Person> personFlux = personRepository.findAll();
+        final Mono<Person> personMono = personFlux
+                .filter(person -> person.getId().equals(id))
+                .next();
+        personMono.subscribe(person -> assertEquals(id, person.getId()));
+    }
+
+    @Test
+    @DisplayName("findAll - finds none by id filter")
+    void findAll_FindsNoneByIdFilter() {
+        final Integer id = 5;
+        final Flux<Person> personFlux = personRepository.findAll();
+        final Mono<Person> personMono = personFlux
+                .filter(person -> person.getId().equals(id))
+                .next();
+        personMono.subscribe(person -> assertNull(person));
+    }
+
+    @Test
+    @DisplayName("findAll - Finding none with single throws exception")
+    void findAll_FindingNoneByIdFilterWithSingleThrowsException() {
+        final Integer id = 5;
+        final Flux<Person> personFlux = personRepository.findAll();
+        final Mono<Person> personMono = personFlux
+                .filter(person -> person.getId().equals(id))
+                .single();
+        personMono
+                .doOnError(System.out::println)
+                .onErrorReturn(Person.builder().id(id).build())
+                .subscribe(person -> assertEquals(id, person.getId()));
+    }
 }
